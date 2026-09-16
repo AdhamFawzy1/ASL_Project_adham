@@ -1,0 +1,104 @@
+ASL Model Evaluation
+========================================
+Classes (28): A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, del, space
+Total samples: 31813
+Training samples: 25450
+Testing samples: 6363
+
+Samples per class:
+  A: 1083
+  B: 1096
+  C: 997
+  D: 1232
+  E: 1160
+  F: 1432
+  G: 1231
+  H: 1189
+  I: 1183
+  J: 1273
+  K: 1347
+  L: 1269
+  M: 802
+  N: 624
+  O: 1129
+  P: 997
+  Q: 1079
+  R: 1285
+  S: 1272
+  T: 1155
+  U: 1267
+  V: 1265
+  W: 1222
+  X: 1086
+  Y: 1293
+  Z: 1161
+  del: 918
+  space: 766
+
+Model comparison (same train/test split for all):
+Model                   Train Acc   Test Acc  Precision    Recall      F1   ms/pred
+Random Forest             100.00%     98.48%     98.48%    98.48%  98.48%    0.039
+SVM (RBF)                  98.20%     97.86%     97.96%    97.86%  97.88%    0.937
+K-Nearest Neighbors        98.85%     98.30%     98.32%    98.30%  98.31%    0.055
+Logistic Regression        98.05%     97.66%     97.73%    97.66%  97.66%    0.000
+Decision Tree             100.00%     95.49%     95.53%    95.49%  95.49%    0.000
+
+BEST MODEL: Random Forest
+Training Accuracy: 100.00%
+Testing Accuracy:  98.48%
+Precision (weighted): 98.48%
+Recall (weighted):    98.48%
+F1 Score (weighted):  98.48%
+
+Per-letter performance:
+              precision    recall  f1-score   support
+
+           A       0.99      0.98      0.98       217
+           B       1.00      1.00      1.00       219
+           C       0.98      1.00      0.99       199
+           D       0.99      0.99      0.99       246
+           E       0.99      0.99      0.99       232
+           F       0.99      0.99      0.99       287
+           G       0.99      1.00      0.99       246
+           H       1.00      0.98      0.99       238
+           I       0.99      0.98      0.99       237
+           J       0.98      0.99      0.98       255
+           K       0.99      0.99      0.99       270
+           L       1.00      1.00      1.00       254
+           M       0.91      0.91      0.91       160
+           N       0.91      0.93      0.92       125
+           O       0.98      0.99      0.98       226
+           P       0.99      0.99      0.99       199
+           Q       0.99      1.00      0.99       216
+           R       0.97      0.97      0.97       257
+           S       0.99      1.00      0.99       254
+           T       1.00      0.98      0.99       231
+           U       0.98      0.96      0.97       253
+           V       0.98      0.99      0.99       253
+           W       0.99      0.98      0.98       244
+           X       0.98      0.98      0.98       217
+           Y       1.00      0.99      1.00       259
+           Z       0.99      1.00      1.00       232
+         del       0.99      0.99      0.99       184
+       space       0.98      0.98      0.98       153
+
+    accuracy                           0.98      6363
+   macro avg       0.98      0.98      0.98      6363
+weighted avg       0.98      0.98      0.98      6363
+
+Most confused letter pairs (true -> predicted, count):
+  M -> N: 12 times
+  N -> M: 8 times
+  U -> V: 3 times
+  R -> U: 3 times
+  J -> I: 3 times
+  X -> R: 2 times
+  U -> X: 2 times
+  U -> R: 2 times
+  R -> X: 2 times
+  P -> Q: 2 times
+  K -> R: 2 times
+  H -> M: 2 times
+  H -> G: 2 times
+  E -> S: 2 times
+  D -> O: 2 times

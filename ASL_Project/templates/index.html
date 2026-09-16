@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hand to Letter — ASL Alphabet Reader</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #16241F;
+    --panel: #1E322B;
+    --panel-line: #2E463D;
+    --ink: #F3EFE6;
+    --ink-muted: #A9BBB3;
+    --amber: #E8A33D;
+    --amber-dim: #6B5228;
+    --coral: #E2725B;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+    line-height: 1.5;
+  }
+
+  .wrap {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  .mark {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-muted);
+    letter-spacing: 0.02em;
+    margin-bottom: 40px;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: clamp(32px, 5vw, 52px);
+    line-height: 1.08;
+    margin: 0 0 16px;
+    max-width: 14ch;
+  }
+
+  .lede {
+    color: var(--ink-muted);
+    font-size: 17px;
+    max-width: 46ch;
+    margin: 0 0 48px;
+  }
+
+  .demo {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 20px;
+    align-items: stretch;
+  }
+
+  @media (max-width: 720px) {
+    .demo { grid-template-columns: 1fr; }
+  }
+
+  .video-panel {
+    position: relative;
+    background: #0E1815;
+    border: 1px solid var(--panel-line);
+    border-radius: 14px;
+    overflow: hidden;
+    min-height: 360px;
+  }
+
+  .video-panel video,
+  .video-panel canvas.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+  }
+
+  .video-panel video { display: block; }
+  .video-panel canvas.overlay { pointer-events: none; }
+
+  .video-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-muted);
+    font-size: 14px;
+    text-align: center;
+    padding: 24px;
+    background: #0E1815;
+  }
+
+  .status-pill {
+    position: absolute;
+    left: 14px;
+    bottom: 14px;
+    background: rgba(14, 24, 21, 0.85);
+    border: 1px solid var(--panel-line);
+    color: var(--ink-muted);
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 100px;
+    transition: color 0.2s ease;
+  }
+
+  .status-pill.alert { color: var(--coral); }
+
+  .letter-card {
+    background: var(--panel);
+    border: 2px solid var(--amber-dim);
+    border-radius: 14px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .letter-glyph {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 160px;
+    line-height: 1;
+    color: var(--amber);
+    margin: 0;
+  }
+
+  .letter-glyph.pop { animation: pop 0.32s ease; }
+
+  @keyframes pop {
+    0% { transform: scale(0.85); opacity: 0.4; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .conf-row, .lock-row {
+    width: 100%;
+    max-width: 220px;
+    margin-top: 14px;
+  }
+
+  .conf-label, .lock-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-muted);
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  .conf-track, .lock-track {
+    height: 6px;
+    background: var(--panel-line);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+
+  .conf-fill {
+    height: 100%;
+    background: var(--amber);
+    width: 0%;
+    transition: width 0.25s ease;
+  }
+
+  .lock-fill {
+    height: 100%;
+    background: #4CAF6E;
+    width: 0%;
+    transition: width 0.15s ease;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--panel-line);
+    margin: 64px 0 40px;
+  }
+
+  h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 26px;
+    margin: 0 0 8px;
+  }
+
+  .section-lede {
+    color: var(--ink-muted);
+    font-size: 15px;
+    margin: 0 0 24px;
+    max-width: 50ch;
+  }
+
+  .sentence-panel {
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 64px;
+  }
+
+  .sentence-text {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 28px;
+    letter-spacing: 0.04em;
+    min-height: 1.4em;
+    word-break: break-word;
+    margin-bottom: 20px;
+  }
+
+  .sentence-text .cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    background: var(--amber);
+    margin-left: 2px;
+    vertical-align: -2px;
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .sentence-controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .spell-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+
+  input[type="text"] {
+    flex: 1;
+    min-width: 200px;
+    background: var(--bg);
+    border: 1px solid var(--panel-line);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 15px;
+    padding: 12px 14px;
+    border-radius: 8px;
+  }
+
+  input[type="text"]:focus {
+    outline: 2px solid var(--amber);
+    outline-offset: 1px;
+  }
+
+  button {
+    background: transparent;
+    border: 1px solid var(--panel-line);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 12px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  button:hover { border-color: var(--amber); color: var(--amber); }
+  button:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+
+  button.primary {
+    background: var(--amber);
+    border-color: var(--amber);
+    color: #1B1305;
+  }
+
+  button.primary:hover { color: #1B1305; opacity: 0.9; }
+
+  .sign-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .sign-card {
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 8px;
+    padding: 8px;
+    width: 76px;
+    text-align: center;
+  }
+
+  .sign-card img {
+    width: 100%;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 4px;
+    display: block;
+  }
+
+  .sign-card .letter-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-muted);
+    margin-top: 6px;
+  }
+
+  .sign-space {
+    width: 24px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="mark">Hand to Letter</div>
+
+  <h1>Read a sign, get a letter.</h1>
+  <p class="lede">Hold a hand shape up to your camera and this reads the ASL letter back in real time — from the shape of your hand alone, no wearables required.</p>
+
+  <div class="demo">
+    <div class="video-panel">
+      <video id="video" autoplay muted playsinline></video>
+      <canvas id="overlay" class="overlay"></canvas>
+      <div class="video-placeholder" id="placeholder">Starting camera…</div>
+      <div class="status-pill" id="statusPill" style="display:none;"></div>
+    </div>
+
+    <div class="letter-card">
+      <p class="letter-glyph" id="letterGlyph">–</p>
+      <div class="conf-row">
+        <div class="conf-label">
+          <span>Confidence</span>
+          <span id="confValue">0%</span>
+        </div>
+        <div class="conf-track">
+          <div class="conf-fill" id="confFill"></div>
+        </div>
+      </div>
+      <div class="lock-row">
+        <div class="lock-label">
+          <span>Hold steady to add</span>
+        </div>
+        <div class="lock-track">
+          <div class="lock-fill" id="lockFill"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <h2>Your sentence</h2>
+  <p class="section-lede">Confirmed letters are added here automatically. Drop your hand or change the shape before repeating the same letter.</p>
+
+  <div class="sentence-panel">
+    <div class="sentence-text" id="sentenceText"><span class="cursor"></span></div>
+    <div class="sentence-controls">
+      <button onclick="addSpace()">Add space</button>
+      <button onclick="backspace()">Delete last letter</button>
+      <button onclick="clearSentence()">Clear</button>
+      <button class="primary" onclick="speakSentence()">Read it aloud</button>
+    </div>
+  </div>
+
+  <h2>Spell it out</h2>
+  <p class="section-lede">Or type a word to see it in sign.</p>
+
+  <div class="spell-row">
+    <input type="text" id="textInput" placeholder="Type a word…">
+    <button class="primary" onclick="textToSign()">Show the signs</button>
+  </div>
+
+  <div class="sign-strip" id="signRow"></div>
+
+</div>
+
+<canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+
+<script>
+const video = document.getElementById('video');
+const overlay = document.getElementById('overlay');
+const octx = overlay.getContext('2d');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const placeholder = document.getElementById('placeholder');
+const statusPill = document.getElementById('statusPill');
+const letterGlyph = document.getElementById('letterGlyph');
+const confValue = document.getElementById('confValue');
+const confFill = document.getElementById('confFill');
+const lockFill = document.getElementById('lockFill');
+const sentenceText = document.getElementById('sentenceText');
+
+let lastLetter = null;
+
+const HAND_CONNECTIONS = [
+  [0,1],[1,2],[2,3],[3,4],
+  [0,5],[5,6],[6,7],[7,8],
+  [5,9],[9,10],[10,11],[11,12],
+  [9,13],[13,14],[14,15],[15,16],
+  [13,17],[17,18],[18,19],[19,20],
+  [0,17]
+];
+
+// ---- Building a sentence from confirmed letters ----
+const CONFIRM_WINDOW = 12;       // how many recent frames we look at (~3s at 250ms/frame)
+const CONFIRM_AGREEMENT = 9;     // how many of those must agree to "lock in" a letter
+const CONFIRM_CONF_THRESHOLD = 0.45; // only count high-confidence frames toward a lock-in
+let confirmBuffer = [];
+let readyToAppend = true; // false right after appending, until hand resets
+
+function sentenceString() {
+  return Array.from(sentenceText.childNodes)
+    .filter(n => n.nodeType === Node.TEXT_NODE)
+    .map(n => n.textContent).join('');
+}
+
+function renderSentence() {
+  const text = sentenceString();
+  sentenceText.innerHTML = '';
+  sentenceText.appendChild(document.createTextNode(text));
+  const cursor = document.createElement('span');
+  cursor.className = 'cursor';
+  sentenceText.appendChild(cursor);
+}
+
+function appendToSentence(str) {
+  sentenceText.insertBefore(document.createTextNode(str), sentenceText.lastChild);
+}
+
+function addSpace() { appendToSentence(' '); }
+
+function backspace() {
+  const text = sentenceString().slice(0, -1);
+  sentenceText.innerHTML = '';
+  sentenceText.appendChild(document.createTextNode(text));
+  const cursor = document.createElement('span');
+  cursor.className = 'cursor';
+  sentenceText.appendChild(cursor);
+}
+
+function clearSentence() { renderSentence(); }
+
+async function speakSentence() {
+  const text = sentenceString().trim();
+  if (!text) return;
+  await fetch('/speak', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text })
+  });
+}
+
+renderSentence();
+
+function updateSentenceBuild(letter, confidence) {
+  const qualifies = letter && confidence >= CONFIRM_CONF_THRESHOLD;
+  confirmBuffer.push(qualifies ? letter : null);
+  if (confirmBuffer.length > CONFIRM_WINDOW) confirmBuffer.shift();
+
+  // Unlock repeats once we've clearly lost the hand / dropped confidence recently.
+  const recentGaps = confirmBuffer.slice(-3).filter(x => x === null).length;
+  if (recentGaps >= 2) readyToAppend = true;
+
+  const counts = {};
+  confirmBuffer.forEach(l => { if (l) counts[l] = (counts[l] || 0) + 1; });
+  let best = null, bestCount = 0;
+  for (const l in counts) {
+    if (counts[l] > bestCount) { best = l; bestCount = counts[l]; }
+  }
+
+  lockFill.style.width = Math.min(100, Math.round((bestCount / CONFIRM_AGREEMENT) * 100)) + '%';
+
+  if (best && bestCount >= CONFIRM_AGREEMENT && readyToAppend) {
+    appendToSentence(best);
+    readyToAppend = false;
+    confirmBuffer = [];
+    lockFill.style.width = '0%';
+  }
+}
+// ---- end sentence building ----
+
+navigator.mediaDevices.getUserMedia({ video: true })
+  .then(stream => { video.srcObject = stream; })
+  .catch(err => {
+    placeholder.textContent = "Camera access needed — check your browser permissions.";
+  });
+
+video.addEventListener('loadeddata', () => {
+  placeholder.style.display = 'none';
+  overlay.width = video.clientWidth;
+  overlay.height = video.clientHeight;
+  predictLoop();
+});
+
+function setStatus(text, alert) {
+  if (!text) { statusPill.style.display = 'none'; return; }
+  statusPill.style.display = 'block';
+  statusPill.textContent = text;
+  statusPill.classList.toggle('alert', !!alert);
+}
+
+function drawSkeleton(points) {
+  octx.clearRect(0, 0, overlay.width, overlay.height);
+  if (!points || points.length === 0) return;
+
+  const px = points.map(([x, y]) => [x * overlay.width, y * overlay.height]);
+
+  octx.strokeStyle = '#4CAF6E';
+  octx.lineWidth = 2;
+  HAND_CONNECTIONS.forEach(([a, b]) => {
+    octx.beginPath();
+    octx.moveTo(px[a][0], px[a][1]);
+    octx.lineTo(px[b][0], px[b][1]);
+    octx.stroke();
+  });
+
+  octx.fillStyle = '#E2725B';
+  px.forEach(([x, y]) => {
+    octx.beginPath();
+    octx.arc(x, y, 3.5, 0, Math.PI * 2);
+    octx.fill();
+  });
+}
+
+async function predictLoop() {
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+
+  try {
+    const res = await fetch('/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: dataUrl })
+    });
+    const data = await res.json();
+
+    drawSkeleton(data.points);
+
+    if (data.error) {
+      setStatus(data.error, true);
+      letterGlyph.textContent = '–';
+      confValue.textContent = '0%';
+      confFill.style.width = '0%';
+      updateSentenceBuild(null, 0);
+    } else if (!data.letter) {
+      setStatus(data.status || 'No hand in view yet', false);
+      letterGlyph.textContent = '–';
+      confValue.textContent = '0%';
+      confFill.style.width = '0%';
+      updateSentenceBuild(null, 0);
+    } else {
+      setStatus(null, false);
+      if (data.letter !== lastLetter) {
+        letterGlyph.textContent = data.letter;
+        letterGlyph.classList.remove('pop');
+        void letterGlyph.offsetWidth;
+        letterGlyph.classList.add('pop');
+        lastLetter = data.letter;
+      }
+      const pct = Math.round(data.confidence * 100);
+      confValue.textContent = pct + '%';
+      confFill.style.width = pct + '%';
+      updateSentenceBuild(data.letter, data.confidence);
+    }
+  } catch (e) {
+    setStatus('Prediction request failed — is the server still running?', true);
+  }
+
+  setTimeout(predictLoop, 250);
+}
+
+async function textToSign() {
+  const text = document.getElementById('textInput').value;
+  const res = await fetch('/text_to_sign?text=' + encodeURIComponent(text));
+  const data = await res.json();
+  const row = document.getElementById('signRow');
+  row.innerHTML = '';
+  data.letters.forEach(item => {
+    if (item.img_url) {
+      const card = document.createElement('div');
+      card.className = 'sign-card';
+      const img = document.createElement('img');
+      img.src = item.img_url;
+      img.alt = 'Sign for ' + item.char;
+      const label = document.createElement('div');
+      label.className = 'letter-label';
+      label.textContent = item.char;
+      card.appendChild(img);
+      card.appendChild(label);
+      row.appendChild(card);
+    } else {
+      const gap = document.createElement('div');
+      gap.className = 'sign-space';
+      row.appendChild(gap);
+    }
+  });
+}
+</script>
+</body>
+</html>
