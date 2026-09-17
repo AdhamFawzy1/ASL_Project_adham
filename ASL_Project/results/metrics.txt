@@ -37,10 +37,10 @@ Samples per class:
 
 Model comparison (same train/test split for all):
 Model                   Train Acc   Test Acc  Precision    Recall      F1   ms/pred
-Random Forest             100.00%     98.48%     98.48%    98.48%  98.48%    0.039
-SVM (RBF)                  98.20%     97.86%     97.96%    97.86%  97.88%    0.937
+Random Forest             100.00%     98.48%     98.48%    98.48%  98.48%    0.045
+SVM (RBF)                  98.20%     97.86%     97.96%    97.86%  97.88%    0.936
 K-Nearest Neighbors        98.85%     98.30%     98.32%    98.30%  98.31%    0.055
-Logistic Regression        98.05%     97.66%     97.73%    97.66%  97.66%    0.000
+Logistic Regression        98.05%     97.66%     97.73%    97.66%  97.66%    0.001
 Decision Tree             100.00%     95.49%     95.53%    95.49%  95.49%    0.000
 
 BEST MODEL: Random Forest

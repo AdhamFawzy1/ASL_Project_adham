@@ -218,3 +218,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+*.pyc
+dataset/asl_alphabet_train/
+dataset/X.npy
+dataset/y.npy
+models/hand_landmarker.task
